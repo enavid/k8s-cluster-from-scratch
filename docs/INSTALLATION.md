@@ -21,14 +21,14 @@ This document provides a **step-by-step installation guide** for setting up a mu
 On each node, set a unique hostname:
 
 ```bash
-hostnamectl set-hostname master-1     # On master node
-hostnamectl set-hostname worker-1     # Example for workers
+sudo hostnamectl set-hostname master-1     # On master node
+sudo hostnamectl set-hostname worker-1     # Example for workers
 ```
 
 Then update `/etc/hosts`:
 
 ```bash
-nano /etc/hosts
+sudo nano /etc/hosts
 # Add all node IPs with their hostnames
 ```
 
@@ -37,8 +37,8 @@ nano /etc/hosts
 ## 🧹 2. Disable Swap
 
 ```bash
-swapoff -a
-nano /etc/fstab   # Comment out any swap entries
+sudo swapoff -a
+sudo nano /etc/fstab   # Comment out any swap entries
 free -h           # Confirm swap is off
 ```
 
