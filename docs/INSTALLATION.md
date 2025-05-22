@@ -48,67 +48,78 @@ free -h           # Confirm swap is off
 
 Use the offline `.rpm` packages provided under `tools/`.
 
-Example for containerd:
+Install iscsi initator:
 
 ```bash
-cd tools/containerd
-chmod +x install.sh
-./install.sh
+sudo chmod +x ./tools/iscsi-initiator-utils/install.sh
+sudo ./tools/iscsi-initiator-utils/install.sh
 ```
 
-Repeat for:
-- `k8s/`
-- `iscsi-initiator-utils/`
-- `nfs-utils/`
+Install nfs utils:
+
+```bash
+sudo chmod +x ./tools/nfs-utils/install.sh 
+sudo ./tools/nfs-utils/install.sh
+```
+
+Install containerd:
+
+```bash
+sudo chmod +x ./tools/containerd/install.sh 
+sudo ./tools/containerd/install.sh 
+```
 
 ---
 
 ## 🐳 4. Load Pre-downloaded Images
 
 ```bash
-ctr -n k8s.io image import ./images/k8s-images.tar
-ctr -n k8s.io image import ./images/ingress.tar
-ctr -n k8s.io image import ./images/longhornio.tar
+sudo ctr -n k8s.io image import ./images/ingress.tar
+sudo ctr -n k8s.io image import ./images/k8s-images.tar
+sudo ctr -n k8s.io image import ./images/longhornio.tar
 ```
 
 ---
 
-## 🚀 5. Initialize Master Node
+## 🚢 5. Install kubernetes 
+
+```bash
+sudo chmod +x ./tools/k8s/install.sh
+sudo ./tools/k8s/install.sh
+```
+
+---
+
+## 🚀 6. Initialize Master Node
 
 ```bash
 cd kubeadm-config/
-kubeadm init --config=kubeadm-config.yml
+sudo kubeadm init --config=kubeadm-config.yml # You can include your desired settings in the kubeadm-config.yml file.
 ```
 
 Then set up the kubeconfig for your non-root user:
 
 ```bash
 mkdir -p $HOME/.kube
-cp /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-To allow master to schedule pods:
+---
+
+## 🌐 7. Install Network Plugin (Calico)
 
 ```bash
-kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+kubectl create -f ./manifests/calico/tigera-operator.yml
+kubectl create -f ./manifests/calico/custom-resources.yml
 ```
 
 ---
 
-## 🌐 6. Install Network Plugin (Calico)
+## 💾 8. Install Longhorn Storage
 
 ```bash
-kubectl apply -f manifests/calico/tigera-operator.yml
-kubectl apply -f manifests/calico/custom-resources.yml
-```
-
----
-
-## 💾 7. Install Longhorn Storage
-
-```bash
-kubectl apply -f manifests/longhorn/longhorn.yml
+kubectl create -f ./manifests/longhorn/longhorn.yml
 ```
 
 You can verify volumes and storage classes via:
@@ -120,24 +131,19 @@ kubectl get pods -n longhorn-system
 
 ---
 
-## 🌐 8. Configure Ingress and Load Balancer (MetalLB)
+## 🌐 9. Configure Ingress and Load Balancer (MetalLB)
 
 ```bash
-kubectl apply -f manifests/metallb/metallb-native.yml
-kubectl apply -f manifests/metallb/ingress-nginx-controller.yml
-kubectl apply -f manifests/metallb/ingress-nginx-patch.yml
-kubectl apply -f manifests/metallb/metallb-config.yml
-```
-
-Restart the ingress controller:
-
-```bash
-kubectl rollout restart deployment ingress-nginx-controller -n ingress-nginx
+kubectl apply -f ./manifests/metallb/ingress-nginx-controller.yml
+kubectl apply -f ./manifests/metallb/ingress-nginx-patch.yml
+kubectl apply -f ./manifests/metallb/metallb-native.yml
+kubectl apply -f ./manifests/metallb/metallb-config.yml
+kubectl apply -f ./manifests/ingress/longhorn-ingress.yml
 ```
 
 ---
 
-## 🔍 9. Run Environment Checks (Optional)
+## 🔍 10. Run Environment Checks (Optional)
 
 To verify if Longhorn and other components can function correctly:
 
@@ -154,7 +160,7 @@ chmod +x environment_check.sh
 - You can scale this cluster by adding or removing worker nodes as needed.
 - This setup is ideal for test labs, air-gapped environments, or practicing DevOps skills.
 - For production, ensure security hardening, backups, and up-to-date versions.
-
+- For additional helper commands, see [HELPFUL-COMMANDS.md](./HELPFUL-COMMANDS.md).
 ---
 
 > Built for learning. Designed for practice. Inspired by real-world challenges.
