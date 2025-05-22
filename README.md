@@ -89,3 +89,10 @@ You can clone or download the repository from GitHub using the following link:
 ```bash
 git clone https://github.com/enavid/k8s-cluster-from-scratch.git
 ```
+
+---
+
+## 📦 Deployment Instructions
+
+For detailed setup steps, please see the [INSTALLATION.md](./docs/INSTALLATION.md) guide included in this repository.
+
