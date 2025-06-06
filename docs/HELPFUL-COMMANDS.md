@@ -60,4 +60,4 @@ C:\Windows\System32\drivers\etc\hosts
 
 ---
 
-📘 For detailed installation steps, refer to [INSTALLATION.md](./installation/INSTALLATION.md).
+📘 For detailed installation steps, refer to [INSTALLATION.md](./INSTALLATION.md).
