@@ -73,9 +73,7 @@ sudo ./tools/install.sh
 
 ---
 
----
-
-## 🚀 4. Initialize Master Node (Master Node Only)
+🚀 4. Initialize Master Node (Master Node Only)
 
 ```bash
 cd kubeadm-config/
