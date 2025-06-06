@@ -1,4 +1,3 @@
-
 # 🛠️ Kubernetes Offline Cluster Installation Guide
 
 This document provides a **step-by-step installation guide** for setting up a multi-node Kubernetes cluster **completely offline** using AlmaLinux servers.
@@ -16,7 +15,7 @@ This document provides a **step-by-step installation guide** for setting up a mu
 
 ---
 
-## ⚙️ 1. Set Hostnames
+## ⚙️ 1. Set Hostnames ( **All Nodes** )
 
 On each node, set a unique hostname:
 
@@ -34,67 +33,53 @@ sudo nano /etc/hosts
 
 ---
 
-## 🧹 2. Disable Swap
+## 🧹 2. Disable Swap ( **All Nodes** )
 
 ```bash
 sudo swapoff -a
 sudo nano /etc/fstab   # Comment out any swap entries
-free -h           # Confirm swap is off
+free -h                # Confirm swap is off
 ```
 
 ---
 
-## 📦 3. Install Required Packages
+## 📦 3. Install Prerequisites & Load Images ( **All Nodes** )
 
-Use the offline `.rpm` packages provided under `tools/`.
-
-Install iscsi initator:
+To automate setup of required packages and image loading, use the provided script:
 
 ```bash
-sudo chmod +x ./tools/iscsi-initiator-utils/install.sh
-sudo ./tools/iscsi-initiator-utils/install.sh
-```
-
-Install nfs utils:
-
-```bash
-sudo chmod +x ./tools/nfs-utils/install.sh 
-sudo ./tools/nfs-utils/install.sh
-```
-
-Install containerd:
-
-```bash
-sudo chmod +x ./tools/containerd/install.sh 
-sudo ./tools/containerd/install.sh 
+sudo chmod +x ./tools/install.sh
+sudo ./tools/install.sh
 ```
 
 ---
 
-## 🐳 4. Load Pre-downloaded Images
+### 📌 Transition Note
 
-```bash
-sudo ctr -n k8s.io image import ./images/ingress.tar
-sudo ctr -n k8s.io image import ./images/k8s-images.tar
-sudo ctr -n k8s.io image import ./images/longhornio.tar
-```
+> **Up to this point, all steps must be performed on *all* nodes — both master and workers.**
+>
+> Now, in **Step 4**, you will initialize the Kubernetes cluster **only on the master node** using `kubeadm init`.
+>
+> After that, the `kubeadm init` command will print a `kubeadm join ...` command.
+> **You must run that join command on each worker node** to connect them to the cluster.
+>
+> Once all workers have joined the cluster, you can verify node registration on the master by running:
+>
+> ```bash
+> kubectl get nodes -A
+> ```
+>
+> From **Step 5 onward, all remaining actions will be performed *only on the master node.***
 
 ---
 
-## 🚢 5. Install kubernetes 
-
-```bash
-sudo chmod +x ./tools/k8s/install.sh
-sudo ./tools/k8s/install.sh
-```
-
 ---
 
-## 🚀 6. Initialize Master Node
+## 🚀 4. Initialize Master Node (Master Node Only)
 
 ```bash
 cd kubeadm-config/
-sudo kubeadm init --config=kubeadm-config.yml # You can include your desired settings in the kubeadm-config.yml file.
+sudo kubeadm init --config=./kubeadm-config/kubeadm-config.yml # You can include your desired settings in the kubeadm-config.yml file.
 ```
 
 Then set up the kubeconfig for your non-root user:
@@ -107,7 +92,7 @@ chown $(id -u):$(id -g) $HOME/.kube/config
 
 ---
 
-## 🌐 7. Install Network Plugin (Calico)
+## 🌐 5. Install Network Plugin Calico (Master Node Only)
 
 ```bash
 kubectl create -f ./manifests/calico/tigera-operator.yml
@@ -116,7 +101,7 @@ kubectl create -f ./manifests/calico/custom-resources.yml
 
 ---
 
-## 💾 8. Install Longhorn Storage
+## 💾 6. Install Longhorn Storage (Master Node Only)
 
 ```bash
 kubectl create -f ./manifests/longhorn/longhorn.yml
@@ -131,7 +116,7 @@ kubectl get pods -n longhorn-system
 
 ---
 
-## 🌐 9. Configure Ingress and Load Balancer (MetalLB)
+## 🌐 7. Configure Ingress and Load Balancer MetalLB (Master Node Only)
 
 ```bash
 kubectl apply -f ./manifests/metallb/ingress-nginx-controller.yml
@@ -143,7 +128,7 @@ kubectl apply -f ./manifests/ingress/longhorn-ingress.yml
 
 ---
 
-## 🔍 10. Run Environment Checks (Optional)
+## 🔍 8. Run Environment Checks (Optional)
 
 To verify if Longhorn and other components can function correctly:
 
@@ -161,6 +146,7 @@ chmod +x environment_check.sh
 - This setup is ideal for test labs, air-gapped environments, or practicing DevOps skills.
 - For production, ensure security hardening, backups, and up-to-date versions.
 - For additional helper commands, see [HELPFUL-COMMANDS.md](./HELPFUL-COMMANDS.md).
+
 ---
 
 > Built for learning. Designed for practice. Inspired by real-world challenges.
