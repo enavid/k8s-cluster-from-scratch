@@ -1,6 +1,6 @@
 # Kubernetes Cluster Setup with Containerd, Calico, Longhorn, and MetalLB
 
-This project demonstrates the **offline setup of a multi-node Kubernetes cluster** using AlmaLinux servers. The goal was to simulate a real-world, production-like environment **without internet access** as part of a personal DevOps training exercise.
+This project demonstrates the **offline setup of a multi-node Kubernetes cluster** using AlmaLinux servers. The goal was to simulate a real-world, production-like environment as part of a personal DevOps training exercise.
 
 > ⚠️ Note: All required packages and container images were **manually downloaded in advance**.
 > If you're following this guide for a production deployment, it's strongly recommended to download the **latest versions** of each component directly from their official sources.
