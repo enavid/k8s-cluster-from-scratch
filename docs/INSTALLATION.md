@@ -116,7 +116,103 @@ kubectl get pods -n longhorn-system
 
 ---
 
-## 🌐 7. Configure Ingress and Load Balancer MetalLB (Master Node Only)
+## 🌐 7. Configure Ingress and Load Balancer (Master Node Only)
+
+
+### 🔧 Configuration Notes
+
+Befor applying the manifests, you can customize the ingress behavior and load balancing setup:
+
+---
+
+#### 1. Set custom domain for Longhorn ingress
+
+Edit the file below to define your desired domain (e.g., `longhorn.local`):
+
+**📄 `manifests/ingress/longhorn-ingress.yml`**
+
+```yaml
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: longhorn.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: longhorn-frontend
+            port:
+              number: 80
+```
+
+> Make sure `longhorn.local` is resolvable (e.g., add to `/etc/hosts`).
+
+---
+
+#### 2. Define IP address pool for MetalLB
+
+Specify the range of IPs that MetalLB can assign to services of type `LoadBalancer`:
+
+**📄 `manifests/metallb/metallb-config.yml`**
+
+```yaml
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: ingress-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.10.10.1-172.10.10.100
+```
+
+> Make sure this range is available and doesn’t conflict with your local network.
+
+---
+
+#### 3. Change ingress type or assign static IP
+
+By default, the ingress-nginx controller is set as `NodePort`. To switch it to `LoadBalancer` and assign a static IP, modify this section:
+
+**📄 `manifests/metallb/ingress-nginx-controller.yml`** (Lines ~346–365):
+
+```yaml
+spec:
+  # Uncomment these lines to switch to LoadBalancer with static IP:
+  #type: LoadBalancer
+  #loadBalancerIP: 172.10.10.10
+
+  type: NodePort
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - appProtocol: http
+    name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
+  - appProtocol: https
+    name: https
+    port: 443
+    protocol: TCP
+    targetPort: https
+  selector:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/name: ingress-nginx
+```
+
+> 💡 If you use `LoadBalancer`, make sure the IP (`loadBalancerIP`) is part of the pool.
+
+
+
+Apply the necessary manifests to deploy the Ingress controller and configure MetalLB:
 
 ```bash
 kubectl apply -f ./manifests/metallb/ingress-nginx-controller.yml
@@ -133,8 +229,7 @@ kubectl apply -f ./manifests/ingress/longhorn-ingress.yml
 To verify if Longhorn and other components can function correctly:
 
 ```bash
-cd scripts/
-chmod +x environment_check.sh
+chmod +x ./tools/environment_check.sh
 ./environment_check.sh
 ```
 
