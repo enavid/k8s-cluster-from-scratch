@@ -214,7 +214,6 @@ Apply the necessary manifests to deploy the Ingress controller and configure Met
 
 ```bash
 kubectl apply -f ./manifests/metallb/ingress-nginx-controller.yml
-kubectl apply -f ./manifests/metallb/ingress-nginx-patch.yml
 kubectl apply -f ./manifests/metallb/metallb-native.yml
 kubectl apply -f ./manifests/metallb/metallb-config.yml
 kubectl apply -f ./manifests/ingress/longhorn-ingress.yml
