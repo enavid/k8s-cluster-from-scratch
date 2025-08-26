@@ -167,6 +167,7 @@ metadata:
 spec:
   addresses:
   - 172.10.10.1-172.10.10.100
+  # - 192.168.10.10-192.168.10.10 (Uncomment this line if you need other IP range)
 ```
 
 > Make sure this range is available and doesn’t conflict with your local network.
