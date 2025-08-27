@@ -5,4 +5,4 @@ metadata:
   namespace: longhorn-system
 type: Opaque
 data:
-  auth: bTJRZTlWelJUOiQyeSQwNSRIS2x6Uy9mNFZ2eVljSkRzL3Z4Q3d1R2RvUThSUDBSWXZSYm01VFptWGh1VWY2OElCS0I3Lg==
+  auth: <paste-base64-string-here>
