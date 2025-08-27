@@ -5,6 +5,8 @@ metadata:
   namespace: longhorn-system
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: longhorn-ingress-auth
 spec:
   ingressClassName: nginx
   rules:

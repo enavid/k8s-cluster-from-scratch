@@ -119,20 +119,65 @@ kubectl get pods -n longhorn-system
 
 ### 🔧 Configuration Notes
 
-Befor applying the manifests, you can customize the ingress behavior and load balancing setup:
+This section describes how to protect the **Longhorn UI** with **basic authentication** using NGINX ingress.
 
 ---
 
-#### 1. Set custom domain for Longhorn ingress
+#### 🔑 1. Generate Basic Auth Credentials
+
+Use the helper script `make-auth.sh` provided in `manifest/cert`:
+
+```bash
+chmod +x ./manifest/cert/make-auth.sh
+./manifest/cert/make-auth.sh <username> <password>
+```
+
+Example:
+
+```bash
+./manifest/cert/make-auth.sh admin mypassword
+```
+
+The script will output a **base64-encoded string**.
+Copy this string, as it will be used in the Kubernetes Secret.
+
+---
+
+#### 📦 2. Create Secret for Ingress
+
+Add the following Secret definition to your ingress manifests (e.g., inside `manifest/cert/longhorn-ingress-cert.yml`):
+
+```yaml
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: longhorn-ingress-auth
+  namespace: longhorn-system
+type: Opaque
+data:
+  auth: <paste-base64-string-here>
+```
+
+Replace `<paste-base64-string-here>` with the output from step 1.
+
+---
+
+#### 🌐 3. Update Longhorn Ingress Manifest
 
 Edit the file below to define your desired domain (e.g., `longhorn.local`):
 
-**📄 `manifests/ingress/longhorn-ingress.yml`**
-
 ```yaml
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
+  name: longhorn-ingress
+  namespace: longhorn-system
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: longhorn-ingress-auth
 spec:
   ingressClassName: nginx
   rules:
@@ -146,6 +191,14 @@ spec:
             name: longhorn-frontend
             port:
               number: 80
+```
+
+---
+
+#### 🚀 4. Apply the Manifests
+
+```bash
+kubectl apply -f ./manifest/cert/longhorn-ingress-cert.yml
 ```
 
 > Make sure `longhorn.local` is resolvable (e.g., add to `/etc/hosts`).
