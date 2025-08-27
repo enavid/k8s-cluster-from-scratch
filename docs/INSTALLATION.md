@@ -148,7 +148,6 @@ Copy this string, as it will be used in the Kubernetes Secret.
 Add the following Secret definition to your ingress manifests (e.g., inside `manifest/cert/longhorn-ingress-cert.yml`):
 
 ```yaml
----
 apiVersion: v1
 kind: Secret
 metadata:
